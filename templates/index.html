@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Review Page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://www.cognillo.com/blog/wp-content/uploads/2019/04/sentiment-analysis.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        .parent {
+            display: grid;
+            grid-template-rows: auto 1fr; /* Adjust rows as needed */
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            grid-row: 1; /* Places the container in the first row */
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .emoji {
+            font-size: 4rem;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class = "parent">
+        <div class="container">
+            <h1>Sentiment Analysis</h1>
+            <form id="reviewForm" method="POST" action="/predict">
+                <textarea id="reviewText" name="review" placeholder="Enter your review here..."></textarea>
+                <button type="submit">Analyze Sentiment</button>
+            </form>
+            <div id="result" class="hidden">
+                <span id="prediction"></span>
+                <span id="emoji" class="emoji"></span>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('reviewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const resultElement = document.getElementById('result');
+            const predictionElement = document.getElementById('prediction');
+            const emojiElement = document.getElementById('emoji');
+
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                let emoji = '';
+                if (data.sentiment === 'positive') {
+                    emoji = '😊';
+                } else if (data.sentiment === 'negative') {
+                    emoji = '😢';
+                }
+                predictionElement.textContent = data.prediction;
+                emojiElement.textContent = emoji;
+                resultElement.classList.remove('hidden');
+
+                anime({
+                    targets: '#emoji',
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    scale: [0.5, 1],
+                    duration: 800,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                predictionElement.textContent = 'An error occurred. Please try again.';
+                resultElement.classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
